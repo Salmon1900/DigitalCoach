@@ -22,6 +22,21 @@ computer vision and returns technique feedback and coaching tips.
 - **Computer vision:** MediaPipe (self-hosted pose estimation), OpenCV for frame ops,
   FFmpeg for video decoding/frame extraction.
 
+## Deployment & runtime architecture
+
+- **Host:** the Python service runs as a **Docker container on Google Cloud Run** (CPU-bound
+  CV needs real CPU/RAM and long timeouts — *not* a serverless/edge JS platform).
+- **Async job pattern:** upload endpoint validates + stores to Supabase Storage, then
+  **enqueues** an analysis job; a **separate worker** (RQ/arq/Celery on Redis) runs the
+  MediaPipe pipeline off the request path and writes results back to Supabase. The API
+  returns a job id; clients poll/get notified. Never run analysis inside the HTTP request.
+- **Two deployables, one image:** the FastAPI web service and the worker run from the same
+  container image with different entrypoints (`uvicorn app.main:app` vs the worker command).
+- **System deps:** the image must install **FFmpeg** (and OpenCV's runtime libs); pin these
+  in the Dockerfile, not just pip.
+- **Vercel** is reserved for a possible future **frontend/dashboard** only — not this API.
+- First file to create when coding starts: a `Dockerfile` (+ `.dockerignore`).
+
 ## Conventions (follow these when writing code later)
 
 - **Async-first:** API route handlers are `async def`. Push CPU-bound CV work to a
@@ -72,7 +87,7 @@ tests/               # pytest
   explicitly asked.
 - Use the specialized subagents for their domains: `cv-pipeline-engineer` (video/pose),
   `fastapi-architect` (endpoints/schemas), `supabase-integration` (DB/auth/storage),
-  `test-engineer` (pytest).
+  `test-engineer` (pytest), `deployment-engineer` (Docker/Cloud Run).
 - The **`supabase` MCP server** is connected (see `.mcp.json`) — use it for live schema
   inspection, migrations, SQL, logs, and advisors during development. `supabase-py` is for
   app runtime code. Delegate DB work to the `supabase-integration` agent.
