@@ -1,0 +1,31 @@
+# DigitalCoach — sample requests (VS Code "REST Client" extension).
+# Start the service first:  uvicorn app.main:app --reload --port 8080
+
+@base = http://localhost:8080
+
+### Health check
+GET {{base}}/health
+
+### Analyze an uploaded video (multipart). Put a real clip next to this file.
+POST {{base}}/api/v1/analyze
+Content-Type: multipart/form-data; boundary=----digitalcoach
+
+------digitalcoach
+Content-Disposition: form-data; name="exercise"
+
+Push-up
+------digitalcoach
+Content-Disposition: form-data; name="video"; filename="pushup.mp4"
+Content-Type: video/mp4
+
+< ./pushup.mp4
+------digitalcoach--
+
+### Analyze by Supabase Storage reference (JSON) — available after milestone M8
+POST {{base}}/api/v1/analyze/by-reference
+Content-Type: application/json
+
+{
+  "exercise": "Push-up",
+  "video": { "bucket": "workout-videos", "path": "user-123/pushup.mp4" }
+}

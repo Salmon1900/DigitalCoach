@@ -10,7 +10,36 @@
       "Bash(git status*)",
       "Bash(git diff*)",
       "Bash(git log*)",
-      "Bash(git branch*)"
+      "Bash(git branch*)",
+      "Bash(.venv/Scripts/python.exe -m pip install --upgrade pip -q)",
+      "Bash(.venv/Scripts/python.exe -m pip install -q numpy pydantic pydantic-settings fastapi \"uvicorn[standard]\" httpx python-multipart anyio pytest pytest-asyncio ruff)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/test_smoke.py -q)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/cv/test_geometry.py -q)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/cv/test_segmentation.py -q)",
+      "Bash(.venv/Scripts/python.exe -m pytest -q)",
+      "Bash(.venv/Scripts/ruff.exe check *)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/cv/analyzers/test_registry.py -q)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/cv/analyzers/test_pushup.py -q)",
+      "Bash(.venv/Scripts/python.exe -c \"from app.cv.analyzers import registry; print\\('supported:', registry.supported_names\\(\\)\\)\")",
+      "Bash(.venv/Scripts/ruff.exe format *)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/api/test_analyze.py -q)",
+      "Bash(.venv/Scripts/python.exe -m pip install -q \"opencv-python-headless>=4.9,<5.0\" \"mediapipe>=0.10.9,<0.11\")",
+      "Bash(echo \"EXIT=$?\")",
+      "Bash(.venv/Scripts/python.exe -c \"import cv2, mediapipe as mp; print\\('cv2', cv2.__version__\\); print\\('mediapipe', mp.__version__\\); p=mp.solutions.pose.Pose\\(\\); p.close\\(\\); print\\('pose-init OK'\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"import mediapipe.solutions.pose as mpp; p=mpp.Pose\\(\\); p.close\\(\\); print\\('explicit submodule import OK'\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"import mediapipe, os; print\\('path:', os.path.dirname\\(mediapipe.__file__\\)\\); import pkgutil; print\\('submodules:', [m.name for m in pkgutil.iter_modules\\([os.path.dirname\\(mediapipe.__file__\\)]\\)]\\)\")",
+      "Bash(.venv/Scripts/python.exe -m pip index versions mediapipe)",
+      "Bash(.venv/Scripts/python.exe -m pip install \"mediapipe==0.10.14\")",
+      "Bash(.venv/Scripts/python.exe -m pip install -q \"mediapipe==0.10.14\")",
+      "Bash(.venv/Scripts/python.exe -c \"import mediapipe as mp; print\\('version', mp.__version__\\); p=mp.solutions.pose.Pose\\(\\); p.close\\(\\); print\\('solutions.pose OK'\\)\")",
+      "Bash(.venv/Scripts/python.exe -m uvicorn app.main:app --port 8080 --log-level warning)",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/cv/analyzers/test_pullup.py tests/cv/analyzers/test_pike_pushup.py tests/cv/analyzers/test_handstand.py -q)",
+      "Bash(.venv/Scripts/python.exe -c \"from app.cv.analyzers import registry; print\\(registry.supported_names\\(\\)\\)\")",
+      "Bash(.venv/Scripts/python.exe -m pytest)",
+      "Bash(.venv/Scripts/python.exe -m pip install -q \"supabase>=2.5,<3.0\")",
+      "Bash(.venv/Scripts/python.exe -c \"import supabase; print\\('supabase', supabase.__version__\\)\")",
+      "Bash(.venv/Scripts/python.exe -m pytest tests/api/test_analyze_by_reference.py -q)",
+      "Bash(.venv/Scripts/python.exe -c ' *)"
     ],
     "deny": [
       "Read(.env)",
@@ -24,7 +53,10 @@
       {
         "matcher": "Read|Edit|Write|MultiEdit|NotebookEdit|Bash",
         "hooks": [
-          { "type": "command", "command": "python .claude/hooks/guard-secrets.py" }
+          {
+            "type": "command",
+            "command": "python .claude/hooks/guard-secrets.py"
+          }
         ]
       }
     ],
@@ -32,7 +64,10 @@
       {
         "matcher": "Edit|Write|MultiEdit",
         "hooks": [
-          { "type": "command", "command": "python .claude/hooks/format.py" }
+          {
+            "type": "command",
+            "command": "python .claude/hooks/format.py"
+          }
         ]
       }
     ]

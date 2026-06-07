@@ -83,8 +83,11 @@ tests/               # pytest
 
 ## Working agreements for Claude
 
-- **Status:** configuration/planning phase. Do **not** implement business logic unless
-  explicitly asked.
+- **Status:** MVP implemented — synchronous `POST /api/v1/analyze` (multipart) and
+  `/analyze/by-reference` (Supabase Storage) returning feedback for push-up, pull-up,
+  pike push-up, and handstand. Rule-based analyzers live in `app/cv/analyzers/`. Deferred:
+  job-queue/worker, auth, result persistence. Dev env: `.venv` (MediaPipe pinned to
+  `0.10.14` for the bundled `solutions.pose` API).
 - Use the specialized subagents for their domains: `cv-pipeline-engineer` (video/pose),
   `fastapi-architect` (endpoints/schemas), `supabase-integration` (DB/auth/storage),
   `test-engineer` (pytest), `deployment-engineer` (Docker/Cloud Run).

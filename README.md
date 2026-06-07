@@ -1,41 +1,100 @@
 # DigitalCoach
 
-An AI-powered API service that analyzes workout videos using computer vision to provide real-time technique feedback and personalized coaching tips.
+An AI-powered API service that analyzes **calisthenics** workout videos with computer
+vision and returns technique feedback: a score, timestamped remarks, injury-avoidance
+warnings, and coaching tips.
 
-## Overview
+It's built to be consumed by a mobile calisthenics app — the app sends a clip of the
+user performing an exercise, and DigitalCoach returns structured, actionable feedback.
 
-DigitalCoach accepts video uploads of users performing physical exercises and returns structured feedback on their form and technique. The goal is to make high-quality coaching accessible to anyone, anywhere — no personal trainer required.
+## How it works
 
-## How It Works
+```
+video ──▶ frame sampling (OpenCV) ──▶ pose estimation (MediaPipe) ──▶ per-exercise
+                                                                       rule-based analyzer
+                                                                            │
+                                                          score + remarks + tips (JSON)
+```
 
-1. **Upload** — Client submits a workout video via the API
-2. **Analyze** — Computer vision models process the video, detecting body pose and movement patterns
-3. **Feedback** — The service returns timestamped remarks and actionable tips for improving technique
+The analysis is **rule-based geometry**: joint angles and body-line metrics are computed
+from MediaPipe pose landmarks, repetitions are segmented, and each exercise is checked
+against named form criteria. It's deterministic, explainable, and unit-tested — no
+training data required.
 
-## Planned Features
+## Supported exercises
 
-- Support for multiple exercise types (squats, deadlifts, push-ups, etc.)
-- Frame-by-frame pose estimation
-- Technique scoring with detailed breakdowns
-- Natural language coaching tips
-- REST API with webhook support for async video processing
-- Support for real-time streaming analysis (future)
+| Exercise | Type | Checks |
+|----------|------|--------|
+| Push-up | reps | depth, lockout, body line (hip sag / pike) |
+| Pull-up | reps | full dead hang, pull height (chin over bar), swing/kipping |
+| Pike Push-up | reps | pike position (hips high), depth |
+| Handstand | timed | vertical alignment, straight body (banana-back), balance, hold time |
 
-## Tech Stack (Planned)
+The client sends the exercise **by name** (matching the app's `exercises` table, e.g.
+`"Pike Push-up"`); names are matched case/format-insensitively. Unsupported names return
+a `422` listing what's available.
 
-- **API Layer** — To be determined
-- **Computer Vision** — Pose estimation model (e.g., MediaPipe, OpenPose, or similar)
-- **Video Processing** — FFmpeg-based frame extraction
-- **Storage** — Cloud object storage for video input/output
+## API
 
-## Project Status
+Base path: `/api/v1`
 
-Early planning stage. No logic has been implemented yet.
+- `POST /api/v1/analyze` — multipart upload (`exercise` field + `video` file).
+- `POST /api/v1/analyze/by-reference` — JSON body referencing a video already in
+  Supabase Storage: `{ "exercise": "...", "video": { "bucket": "...", "path": "..." } }`.
+- `GET /health` — liveness check. Interactive docs at `/docs`.
 
-## Getting Started
+The response shape is documented in [`sample_analysis.json`](sample_analysis.json):
 
-_Setup instructions will be added as the project develops._
+```json
+{
+  "exercise": "Push-up", "exercise_slug": "push_up",
+  "video_duration_seconds": 12.4, "rep_count": 8, "hold_seconds": null,
+  "analysis": {
+    "score": 78,
+    "remarks": [{ "timestamp_seconds": 3.2, "severity": "warning", "area": "hips", "message": "..." }],
+    "tips": ["..."]
+  },
+  "meta": { "analyzed_frames": 124, "sample_fps": 10.0, "pose_detected_ratio": 0.96, "warnings": [] }
+}
+```
 
-## License
+`severity` is `info | warning | critical` (critical = injury risk).
 
-TBD
+## Quick start
+
+```bash
+python -m venv .venv
+.venv\Scripts\activate            # Windows  (source .venv/bin/activate on macOS/Linux)
+pip install -r requirements-dev.txt
+
+uvicorn app.main:app --reload --port 8080
+python examples/analyze_video.py path/to/pushups.mp4 --exercise "Push-up"
+```
+
+See [`examples/`](examples/) for the CLI harness and raw HTTP examples. For push-ups,
+film from the **side** with your whole body in frame.
+
+## Tech stack
+
+- **API:** FastAPI (async, Pydantic v2, auto OpenAPI)
+- **Computer vision:** MediaPipe Pose (self-hosted), OpenCV, FFmpeg
+- **Storage/DB/auth:** Supabase (Storage used for the by-reference input path)
+- **Runtime:** Python 3.11+, packaged as a Docker container for Google Cloud Run
+
+## Development
+
+```bash
+pytest            # unit + API tests (pure geometry, analyzers on synthetic poses, endpoints)
+ruff check .      # lint
+ruff format .     # format
+```
+
+Architecture follows `routes → services → (cv | db)`. Each exercise is an isolated
+analyzer behind a common interface (`app/cv/analyzers/`), so adding a movement doesn't
+touch the pipeline. See [`CLAUDE.md`](CLAUDE.md) for conventions.
+
+## Status
+
+MVP: synchronous analysis endpoint with four exercises, returning feedback in the
+response. Deliberately deferred: a job-queue/worker for very long videos, auth, and
+server-side persistence of results.

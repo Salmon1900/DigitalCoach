@@ -1,33 +1,42 @@
 {
-  "session_id": "abc123",
-  "exercise": "squat",
-  "video_duration_seconds": 12,
+  "session_id": "0c5b6e2a-9f3d-4a1b-8c7e-2d4f6a8b1c3e",
+  "exercise": "Push-up",
+  "exercise_slug": "push_up",
+  "video_duration_seconds": 12.4,
+  "rep_count": 8,
+  "hold_seconds": null,
   "analysis": {
-    "score": 74,
+    "score": 78,
     "remarks": [
       {
-        "timestamp_seconds": 2.1,
+        "timestamp_seconds": 3.2,
         "severity": "warning",
-        "area": "knees",
-        "message": "Knees caving inward at the bottom of the squat. Focus on pushing knees out in line with your toes."
+        "area": "hips",
+        "message": "Hips are sagging — brace your core and squeeze your glutes to keep a straight line from shoulders to ankles."
       },
       {
-        "timestamp_seconds": 4.8,
-        "severity": "info",
-        "area": "back",
-        "message": "Good neutral spine maintained throughout the descent."
-      },
-      {
-        "timestamp_seconds": 7.3,
+        "timestamp_seconds": 6.5,
         "severity": "warning",
         "area": "depth",
-        "message": "Squat depth is slightly above parallel. Try to reach just below parallel for full muscle engagement."
+        "message": "Shallow rep — only reached ~108° at the elbow. Lower until your elbows bend to about 90°."
+      },
+      {
+        "timestamp_seconds": 9.1,
+        "severity": "info",
+        "area": "depth",
+        "message": "Good depth — elbows reaching a strong bottom position."
       }
     ],
     "tips": [
-      "Strengthen your hip abductors to prevent knee cave.",
-      "Use a slightly wider stance to make reaching parallel more comfortable.",
-      "Consider box squats to practice hitting consistent depth."
+      "Keep your body in one straight line from head to heels.",
+      "Tuck your elbows to roughly 45° from your torso, not flared straight out.",
+      "Strengthen your core (planks, hollow holds) to stop the hips dropping."
     ]
+  },
+  "meta": {
+    "analyzed_frames": 124,
+    "sample_fps": 10.0,
+    "pose_detected_ratio": 0.96,
+    "warnings": []
   }
 }

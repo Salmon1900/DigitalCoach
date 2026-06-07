@@ -5,6 +5,7 @@ Reads the hook payload from stdin. Exit code 2 blocks the tool call and shows th
 stderr message back to Claude; exit 0 allows it. Designed to fail open (allow) on any
 unexpected error so it never wedges the session.
 """
+
 import json
 import os
 import sys

@@ -4,9 +4,26 @@
 No-ops silently if ruff isn't installed yet, the edit wasn't a .py file, or anything
 goes wrong. Always exits 0 so it never interrupts the workflow.
 """
+
 import json
+import os
+import shutil
 import subprocess
 import sys
+
+
+def _find_ruff() -> str | None:
+    """Prefer the project venv's ruff, then fall back to one on PATH."""
+    here = os.path.dirname(os.path.abspath(__file__))
+    root = os.path.dirname(os.path.dirname(here))
+    candidates = [
+        os.path.join(root, ".venv", "Scripts", "ruff.exe"),  # Windows venv
+        os.path.join(root, ".venv", "bin", "ruff"),  # POSIX venv
+    ]
+    for candidate in candidates:
+        if os.path.exists(candidate):
+            return candidate
+    return shutil.which("ruff")
 
 
 def main() -> int:
@@ -15,8 +32,11 @@ def main() -> int:
         path = (payload.get("tool_input", {}) or {}).get("file_path", "")
         if not path or not path.endswith(".py"):
             return 0
+        ruff = _find_ruff()
+        if not ruff:
+            return 0
         # Format, then apply safe autofixes. Swallow all output/errors.
-        for args in (["ruff", "format", path], ["ruff", "check", "--fix", path]):
+        for args in ([ruff, "format", path], [ruff, "check", "--fix", path]):
             subprocess.run(
                 args,
                 stdout=subprocess.DEVNULL,
