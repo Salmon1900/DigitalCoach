@@ -24,6 +24,11 @@ class Settings(BaseSettings):
     min_pose_detected_ratio: float = 0.6
     # Cap total analysed frames to keep latency bounded on long clips.
     max_analyzed_frames: int = 600
+    # Downscale each sampled frame so its longer side is at most this many pixels
+    # before buffering. MediaPipe Pose runs low-res internally and returns normalized
+    # landmarks, so this slashes memory (a 1080p frame is ~6 MB; at 720px ~0.9 MB)
+    # with no accuracy impact. 0 disables downscaling.
+    max_frame_dim: int = 720
 
     # --- Supabase (only needed for the by-reference input path) ---
     supabase_url: str = ""

@@ -38,7 +38,7 @@ No application code changes.
 | memory | `2Gi` | MediaPipe + OpenCV + frame buffers |
 | cpu | `2` | CV is CPU-bound |
 | timeout | `600s` | 120s video + analysis headroom |
-| concurrency | `4` | CV runs in anyio threadpool (releases GIL); tune later |
+| concurrency | `1` | CV is memory+CPU heavy; one job per instance, scale out via max-instances |
 | min-instances | `0` | scale to zero |
 | max-instances | `3` | cap cost on a public endpoint |
 

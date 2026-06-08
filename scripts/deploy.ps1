@@ -20,7 +20,7 @@ param(
     [string]$Memory    = "2Gi",
     [int]   $Cpu       = 2,
     [int]   $Timeout   = 600,
-    [int]   $Concurrency = 4,
+    [int]   $Concurrency = 1,
     [int]   $MinInstances = 0,
     [int]   $MaxInstances = 3
 )

@@ -31,6 +31,7 @@ def run_analysis(video_path: str, exercise_name: str, settings: Settings) -> Ana
         target_fps=settings.analysis_sample_fps,
         max_seconds=settings.max_video_seconds,
         max_frames=settings.max_analyzed_frames,
+        max_frame_dim=settings.max_frame_dim,
     )
     series = estimate_pose(sampled, model_complexity=settings.model_complexity)
 
