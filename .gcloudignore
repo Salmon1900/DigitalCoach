@@ -1,0 +1,47 @@
+# Controls what `gcloud run deploy --source` uploads to Cloud Build.
+# Keep the build context small; the Dockerfile + requirements.txt + app/ must stay.
+# NOTE: do NOT ignore Dockerfile, requirements.txt, app/, or sample_analysis.json —
+# Cloud Build needs them.
+
+.venv/
+venv/
+env/
+ENV/
+__pycache__/
+*.pyc
+
+.git/
+.github/
+.gitignore
+
+# Caches
+.ruff_cache/
+.pytest_cache/
+.mypy_cache/
+.coverage
+htmlcov/
+
+# Not needed in the image
+tests/
+examples/
+docs/
+*.md
+.claude/
+
+# Secrets — never upload
+.env
+.env.*
+!.env.example
+
+# Media / scratch
+*.mp4
+*.mov
+*.avi
+tmp/
+uploads/
+
+# OS / IDE
+.idea/
+.vscode/
+.DS_Store
+Thumbs.db
