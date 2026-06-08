@@ -35,6 +35,7 @@ Write-Host "Deploying '$Service' to Cloud Run ($Region, project $Project)..." -F
 
 gcloud run deploy $Service `
     --source . `
+    --quiet `
     --project $Project `
     --region $Region `
     --allow-unauthenticated `
