@@ -39,7 +39,10 @@
       "Bash(.venv/Scripts/python.exe -m pip install -q \"supabase>=2.5,<3.0\")",
       "Bash(.venv/Scripts/python.exe -c \"import supabase; print\\('supabase', supabase.__version__\\)\")",
       "Bash(.venv/Scripts/python.exe -m pytest tests/api/test_analyze_by_reference.py -q)",
-      "Bash(.venv/Scripts/python.exe -c ' *)"
+      "Bash(.venv/Scripts/python.exe -c ' *)",
+      "Bash(.venv/Scripts/python.exe -c \"from app.main import app; print\\([r.path for r in app.routes if getattr\\(r,'path',None\\) in \\('/','/api/v1/exercises','/api/v1/analyze'\\)]\\)\")",
+      "Bash(.venv/Scripts/python.exe -c \"from app.main import app; print\\(sorted\\(r.path for r in app.routes if getattr\\(r,'path',None\\) in \\('/','/api/v1/exercises','/api/v1/analyze'\\)\\)\\)\")",
+      "PowerShell(.\\\\.venv\\\\Scripts\\\\python.exe -m pytest -q)"
     ],
     "deny": [
       "Read(.env)",

@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>DigitalCoach — Video Analysis</title>
+  <style>
+    :root { --warn: #b45309; --crit: #b91c1c; --info: #1d4ed8; --line: #d4d4d8; }
+    body {
+      font-family: system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
+      max-width: 820px; margin: 2rem auto; padding: 0 1rem; color: #18181b; line-height: 1.5;
+    }
+    h1 { margin-bottom: 0.25rem; }
+    .sub { color: #52525b; margin-top: 0; }
+    form { border: 1px solid var(--line); border-radius: 8px; padding: 1rem; margin: 1.5rem 0; }
+    label { display: block; font-weight: 600; margin: 0.75rem 0 0.25rem; }
+    select, input[type=file], button { font-size: 1rem; padding: 0.5rem; }
+    button {
+      margin-top: 1rem; cursor: pointer; background: #18181b; color: #fff;
+      border: none; border-radius: 6px; padding: 0.6rem 1.2rem;
+    }
+    button:disabled { opacity: 0.5; cursor: progress; }
+    section { margin-top: 1.5rem; }
+    .card { border: 1px solid var(--line); border-radius: 8px; padding: 1rem; }
+    .score { font-size: 2.5rem; font-weight: 700; }
+    table { border-collapse: collapse; width: 100%; margin-top: 0.5rem; }
+    th, td { text-align: left; padding: 0.4rem 0.6rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+    th { font-size: 0.85rem; text-transform: uppercase; letter-spacing: 0.03em; color: #52525b; }
+    .sev { font-weight: 600; text-transform: capitalize; }
+    .sev.warning { color: var(--warn); }
+    .sev.critical { color: var(--crit); }
+    .sev.info { color: var(--info); }
+    ul { margin: 0.5rem 0; padding-left: 1.25rem; }
+    .meta { color: #52525b; font-size: 0.9rem; }
+    .error { color: var(--crit); border-color: var(--crit); }
+    .muted { color: #71717a; }
+    details > summary { cursor: pointer; color: #52525b; margin-top: 1rem; }
+    pre { background: #f4f4f5; padding: 0.75rem; border-radius: 6px; overflow: auto; font-size: 0.85rem; }
+  </style>
+</head>
+<body>
+  <h1>DigitalCoach</h1>
+  <p class="sub">Upload a calisthenics workout video and get technique feedback.</p>
+
+  <form id="form">
+    <label for="exercise">Exercise</label>
+    <select id="exercise" required></select>
+
+    <label for="video">Video file</label>
+    <input type="file" id="video" accept="video/*" required />
+
+    <button type="submit" id="submit">Analyze</button>
+  </form>
+
+  <section id="status" class="muted" hidden></section>
+  <section id="result" hidden></section>
+
+  <script>
+    const form = document.getElementById("form");
+    const exerciseSel = document.getElementById("exercise");
+    const submitBtn = document.getElementById("submit");
+    const statusEl = document.getElementById("status");
+    const resultEl = document.getElementById("result");
+
+    // Populate the exercise dropdown from the API so it never drifts from the server.
+    async function loadExercises() {
+      try {
+        const res = await fetch("/api/v1/exercises");
+        const { exercises } = await res.json();
+        exerciseSel.innerHTML = exercises
+          .map((name) => `<option value="${name}">${name}</option>`)
+          .join("");
+      } catch (e) {
+        exerciseSel.innerHTML = '<option value="">(could not load exercises)</option>';
+      }
+    }
+    loadExercises();
+
+    function setStatus(msg, isError = false) {
+      statusEl.hidden = false;
+      statusEl.textContent = msg;
+      statusEl.className = isError ? "error" : "muted";
+    }
+
+    function escapeHtml(s) {
+      return String(s).replace(/[&<>"']/g, (c) =>
+        ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+    }
+
+    function fmtTime(sec) {
+      const m = Math.floor(sec / 60);
+      const s = (sec % 60).toFixed(1).padStart(4, "0");
+      return `${m}:${s}`;
+    }
+
+    function renderResult(data) {
+      const a = data.analysis;
+      const reps = data.rep_count != null ? `${data.rep_count} reps` : null;
+      const hold = data.hold_seconds != null ? `${data.hold_seconds}s hold` : null;
+      const summary = [reps, hold, `${data.video_duration_seconds.toFixed(1)}s video`]
+        .filter(Boolean).join(" · ");
+
+      const remarks = a.remarks.length
+        ? `<table>
+             <thead><tr><th>Time</th><th>Severity</th><th>Area</th><th>Message</th></tr></thead>
+             <tbody>${a.remarks.map((r) => `
+               <tr>
+                 <td>${fmtTime(r.timestamp_seconds)}</td>
+                 <td class="sev ${escapeHtml(r.severity)}">${escapeHtml(r.severity)}</td>
+                 <td>${escapeHtml(r.area)}</td>
+                 <td>${escapeHtml(r.message)}</td>
+               </tr>`).join("")}
+             </tbody>
+           </table>`
+        : '<p class="muted">No specific remarks — looks clean.</p>';
+
+      const tips = a.tips.length
+        ? `<ul>${a.tips.map((t) => `<li>${escapeHtml(t)}</li>`).join("")}</ul>`
+        : '<p class="muted">No tips.</p>';
+
+      resultEl.hidden = false;
+      resultEl.innerHTML = `
+        <div class="card">
+          <h2 style="margin-top:0">${escapeHtml(data.exercise)}</h2>
+          <p class="meta">${escapeHtml(summary)}</p>
+          <div class="score">${a.score}<span style="font-size:1rem;color:#71717a">/100</span></div>
+
+          <h3>Remarks</h3>
+          ${remarks}
+
+          <h3>Tips</h3>
+          ${tips}
+
+          <p class="meta">
+            Analyzed ${data.meta.analyzed_frames} frames @ ${data.meta.sample_fps} fps ·
+            pose detected ${(data.meta.pose_detected_ratio * 100).toFixed(0)}% of frames
+            ${data.meta.warnings.length ? "· ⚠ " + data.meta.warnings.map(escapeHtml).join("; ") : ""}
+          </p>
+
+          <details>
+            <summary>Raw JSON</summary>
+            <pre>${escapeHtml(JSON.stringify(data, null, 2))}</pre>
+          </details>
+        </div>`;
+    }
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const file = document.getElementById("video").files[0];
+      if (!file) return;
+
+      resultEl.hidden = true;
+      submitBtn.disabled = true;
+      setStatus(`Analyzing "${file.name}" — this can take a while for longer clips…`);
+
+      const body = new FormData();
+      body.append("exercise", exerciseSel.value);
+      body.append("video", file);
+
+      try {
+        const res = await fetch("/api/v1/analyze", { method: "POST", body });
+        const data = await res.json();
+        if (!res.ok) {
+          const detail = data.detail || JSON.stringify(data);
+          const supported = data.supported ? ` (supported: ${data.supported.join(", ")})` : "";
+          setStatus(`Error ${res.status}: ${detail}${supported}`, true);
+          return;
+        }
+        statusEl.hidden = true;
+        renderResult(data);
+      } catch (err) {
+        setStatus(`Request failed: ${err}`, true);
+      } finally {
+        submitBtn.disabled = false;
+      }
+    });
+  </script>
+</body>
+</html>

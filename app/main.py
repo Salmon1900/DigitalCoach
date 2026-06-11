@@ -2,8 +2,10 @@
 
 from __future__ import annotations
 
+from pathlib import Path
+
 from fastapi import FastAPI, Request
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 from app.api.routes import analyze, health
 from app.errors import (
@@ -24,8 +26,18 @@ def create_app() -> FastAPI:
     )
     app.include_router(health.router)
     app.include_router(analyze.router)
+    _register_static(app)
     _register_exception_handlers(app)
     return app
+
+
+_STATIC_DIR = Path(__file__).resolve().parent / "web"
+
+
+def _register_static(app: FastAPI) -> None:
+    @app.get("/", include_in_schema=False)
+    async def index() -> FileResponse:
+        return FileResponse(_STATIC_DIR / "index.html")
 
 
 def _register_exception_handlers(app: FastAPI) -> None:
