@@ -46,22 +46,22 @@ def hold_metrics(
 
     longest_span = 0
     run_start: int | None = None
-    run_end: int | None = None
+    run_len = 0
     gap = 0
     for i, ok in enumerate(in_position):
         if ok:
             if run_start is None:
                 run_start = i
-            run_end = i
+            run_len = i - run_start + 1
             gap = 0
         elif run_start is not None:
             gap += 1
             if gap > max_gap_frames:
-                longest_span = max(longest_span, run_end - run_start + 1)
-                run_start = run_end = None
+                longest_span = max(longest_span, run_len)
+                run_start = None
+                run_len = 0
                 gap = 0
-    if run_start is not None:
-        longest_span = max(longest_span, run_end - run_start + 1)
+    longest_span = max(longest_span, run_len)
 
     return HoldMetrics(
         longest_seconds=longest_span / sample_fps,
