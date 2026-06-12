@@ -33,7 +33,11 @@ class ExerciseAnalysisResult:
     remarks: list[Remark] = field(default_factory=list)
     tips: list[str] = field(default_factory=list)
     rep_count: int | None = None
+    # For timed exercises only. ``hold_seconds`` is the longest continuous
+    # correct-position hold; ``total_hold_seconds`` is the sum of all correct
+    # time. Both are ``None`` for reps-based exercises.
     hold_seconds: float | None = None
+    total_hold_seconds: float | None = None
 
 
 class ExerciseAnalyzer(ABC):

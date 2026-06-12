@@ -16,6 +16,7 @@ import numpy as np
 from app.cv.analyzers._common import body_line_angle, body_vertical_tilt, shoulder_width
 from app.cv.analyzers.base import ExerciseAnalysisResult, ExerciseAnalyzer, Remark
 from app.cv.analyzers.registry import register
+from app.cv.holds import hold_metrics
 from app.cv.types import PoseFrame, PoseSeries
 from app.cv.types import PoseLandmark as L
 
@@ -27,6 +28,7 @@ class HandstandThresholds:
     sway_ratio: float = 0.5  # shoulder horizontal sway / shoulder width
     min_hold_seconds: float = 1.0
     min_visibility: float = 0.3
+    max_gap_frames: int = 1  # bridge this many dropped/jittered frames within a hold
 
 
 def _mean_shoulder_x(frame: PoseFrame, min_visibility: float) -> float | None:
@@ -45,6 +47,27 @@ class HandstandAnalyzer(ExerciseAnalyzer):
 
     def __init__(self, thresholds: HandstandThresholds | None = None):
         self.t = thresholds or HandstandThresholds()
+
+    def _in_position(self, series: PoseSeries) -> list[bool]:
+        """Per-frame (full timeline) flag: balanced AND straight this frame."""
+        t = self.t
+        flags: list[bool] = []
+        for frame in series.frames:
+            if not frame.detected:
+                flags.append(False)
+                continue
+            tilt = body_vertical_tilt(frame, t.min_visibility)
+            straight = body_line_angle(frame, t.min_visibility)
+            ok = (
+                tilt is not None
+                and not np.isnan(tilt)
+                and tilt <= t.max_tilt_deg
+                and straight is not None
+                and not np.isnan(straight)
+                and straight >= t.min_straight_deg
+            )
+            flags.append(bool(ok))
+        return flags
 
     def analyze(self, series: PoseSeries) -> ExerciseAnalysisResult:
         t = self.t
@@ -67,7 +90,13 @@ class HandstandAnalyzer(ExerciseAnalyzer):
             sw = shoulder_width(frame, t.min_visibility)
             widths.append(sw if sw is not None else np.nan)
 
-        hold_seconds = round(len(tilts) / series.sample_fps, 2) if series.sample_fps else 0.0
+        flags = self._in_position(series)
+        if series.sample_fps:
+            metrics = hold_metrics(flags, series.sample_fps, t.max_gap_frames)
+            hold_seconds = metrics.longest_seconds
+            total_hold_seconds = metrics.total_seconds
+        else:
+            hold_seconds = total_hold_seconds = 0.0
 
         if len(tilts) < 3:
             return ExerciseAnalysisResult(
@@ -84,6 +113,7 @@ class HandstandAnalyzer(ExerciseAnalyzer):
                 tips=_BASE_TIPS,
                 rep_count=None,
                 hold_seconds=hold_seconds,
+                total_hold_seconds=total_hold_seconds,
             )
 
         tilt = np.asarray(tilts)
@@ -155,6 +185,7 @@ class HandstandAnalyzer(ExerciseAnalyzer):
             tips=self._tips(off_balance, arched, sway),
             rep_count=None,
             hold_seconds=hold_seconds,
+            total_hold_seconds=total_hold_seconds,
         )
 
     def _sway(self, shoulder_xs, widths) -> float | None:

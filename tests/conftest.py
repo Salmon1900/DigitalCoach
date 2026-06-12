@@ -302,3 +302,13 @@ def build_handstand_series(
         for i in range(n)
     ]
     return PoseSeries(frames=frames, sample_fps=fps)
+
+
+def concat_series(*parts: PoseSeries) -> PoseSeries:
+    """Join several clips into one, re-timestamping frames at the first clip's fps."""
+    fps = parts[0].sample_fps
+    frames = [
+        PoseFrame(timestamp=i / fps, landmarks=f.landmarks)
+        for i, f in enumerate(fr for part in parts for fr in part.frames)
+    ]
+    return PoseSeries(frames=frames, sample_fps=fps)
