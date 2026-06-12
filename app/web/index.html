@@ -68,7 +68,7 @@
         const res = await fetch("/api/v1/exercises");
         const { exercises } = await res.json();
         exerciseSel.innerHTML = exercises
-          .map((name) => `<option value="${name}">${name}</option>`)
+          .map((e) => `<option value="${e.name}">${e.name}</option>`)
           .join("");
       } catch (e) {
         exerciseSel.innerHTML = '<option value="">(could not load exercises)</option>';
@@ -95,8 +95,13 @@
 
     function renderResult(data) {
       const a = data.analysis;
-      const reps = data.rep_count != null ? `${data.rep_count} reps` : null;
-      const hold = data.hold_seconds != null ? `${data.hold_seconds}s hold` : null;
+      const reps = data.type === "reps" && data.rep_count != null
+        ? `${data.rep_count} reps`
+        : null;
+      const hold = data.type === "timed" && data.hold_seconds != null
+        ? `${data.hold_seconds}s hold` +
+          (data.total_hold_seconds != null ? ` (${data.total_hold_seconds}s total)` : "")
+        : null;
       const summary = [reps, hold, `${data.video_duration_seconds.toFixed(1)}s video`]
         .filter(Boolean).join(" · ");
 
