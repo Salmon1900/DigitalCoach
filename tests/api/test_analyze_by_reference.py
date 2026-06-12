@@ -18,6 +18,7 @@ def _fake_response() -> AnalysisResponse:
         session_id="s",
         exercise="Push-up",
         exercise_slug="push_up",
+        type="reps",
         video_duration_seconds=10.0,
         rep_count=5,
         analysis=Analysis(score=90, remarks=[], tips=[]),

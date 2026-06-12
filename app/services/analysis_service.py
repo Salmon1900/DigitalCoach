@@ -55,9 +55,13 @@ def run_analysis(video_path: str, exercise_name: str, settings: Settings) -> Ana
         session_id=str(uuid.uuid4()),
         exercise=analyzer.display_name,
         exercise_slug=analyzer.slug,
+        type=analyzer.kind,
         video_duration_seconds=round(sampled.source_duration, 2),
         rep_count=result.rep_count,
         hold_seconds=(round(result.hold_seconds, 2) if result.hold_seconds is not None else None),
+        total_hold_seconds=(
+            round(result.total_hold_seconds, 2) if result.total_hold_seconds is not None else None
+        ),
         analysis=Analysis(score=result.score, remarks=remarks, tips=result.tips),
         meta=Meta(
             analyzed_frames=len(series),

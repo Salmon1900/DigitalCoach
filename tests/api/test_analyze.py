@@ -15,9 +15,11 @@ def _fake_response() -> AnalysisResponse:
         session_id="test-session",
         exercise="Push-up",
         exercise_slug="push_up",
+        type="reps",
         video_duration_seconds=12.0,
         rep_count=8,
         hold_seconds=None,
+        total_hold_seconds=None,
         analysis=Analysis(
             score=82,
             remarks=[
@@ -48,6 +50,8 @@ def test_analyze_happy_path(monkeypatch):
     assert body["rep_count"] == 8
     assert body["analysis"]["score"] == 82
     assert body["analysis"]["remarks"][0]["area"] == "hips"
+    assert body["type"] == "reps"
+    assert body["total_hold_seconds"] is None
 
 
 def test_unsupported_exercise_returns_422_with_supported_list(monkeypatch):
