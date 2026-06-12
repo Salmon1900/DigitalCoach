@@ -2,9 +2,11 @@
   "session_id": "0c5b6e2a-9f3d-4a1b-8c7e-2d4f6a8b1c3e",
   "exercise": "Push-up",
   "exercise_slug": "push_up",
+  "type": "reps",
   "video_duration_seconds": 12.4,
   "rep_count": 8,
   "hold_seconds": null,
+  "total_hold_seconds": null,
   "analysis": {
     "score": 78,
     "remarks": [

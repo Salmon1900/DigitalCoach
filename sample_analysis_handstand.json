@@ -1,0 +1,38 @@
+{
+  "session_id": "7b3e1c54-2a9d-4f60-9c1a-8e5d2f0b6a14",
+  "exercise": "Handstand",
+  "exercise_slug": "handstand",
+  "type": "timed",
+  "video_duration_seconds": 11.0,
+  "rep_count": null,
+  "hold_seconds": 6.2,
+  "total_hold_seconds": 8.1,
+  "analysis": {
+    "score": 82,
+    "remarks": [
+      {
+        "timestamp_seconds": 1.4,
+        "severity": "warning",
+        "area": "balance",
+        "message": "Body is tilting off vertical — stack your hips and feet directly over your hands."
+      },
+      {
+        "timestamp_seconds": 0.0,
+        "severity": "info",
+        "area": "hold",
+        "message": "Solid, stable handstand held for ~6.2s."
+      }
+    ],
+    "tips": [
+      "Push tall through the shoulders and keep your gaze between your hands.",
+      "Build the hold against a wall first, then practice freestanding balance.",
+      "Find a hollow shape: ribs in, hips stacked over shoulders and wrists."
+    ]
+  },
+  "meta": {
+    "analyzed_frames": 110,
+    "sample_fps": 10.0,
+    "pose_detected_ratio": 0.98,
+    "warnings": []
+  }
+}
