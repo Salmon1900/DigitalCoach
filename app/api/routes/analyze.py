@@ -9,7 +9,7 @@ import anyio
 from fastapi import APIRouter, Depends, File, Form, UploadFile
 
 from app.config import Settings, get_settings
-from app.cv.analyzers.registry import supported_names
+from app.cv.analyzers.registry import supported_exercises
 from app.db.storage import download_to_temp
 from app.models.analysis import AnalysisResponse
 from app.models.requests import AnalyzeByReferenceRequest
@@ -21,9 +21,9 @@ _CHUNK = 1024 * 1024  # 1 MiB
 
 
 @router.get("/exercises")
-async def exercises() -> dict[str, list[str]]:
-    """List the exercise names this service can analyze."""
-    return {"exercises": supported_names()}
+async def exercises() -> dict[str, list[dict[str, str]]]:
+    """List the exercises this service can analyze, each with its type (reps/timed)."""
+    return {"exercises": supported_exercises()}
 
 
 @router.post("/analyze", response_model=AnalysisResponse)

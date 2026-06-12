@@ -55,3 +55,8 @@ def test_unknown_exercise_raises_with_supported_list(isolated_registry):
         isolated_registry.get_analyzer("Backflip")
     assert exc.value.requested == "Backflip"
     assert "Dummy Move" in exc.value.supported
+
+
+def test_supported_exercises_returns_name_slug_type(isolated_registry):
+    rows = isolated_registry.supported_exercises()
+    assert rows == [{"name": "Dummy Move", "slug": "dummy_move", "type": "reps"}]

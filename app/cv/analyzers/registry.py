@@ -52,6 +52,15 @@ def supported_names() -> list[str]:
     return sorted(a.display_name for a in _REGISTRY.values())
 
 
+def supported_exercises() -> list[dict[str, str]]:
+    """List analyzable exercises with their type, sorted by display name."""
+    load_builtin_analyzers()
+    return sorted(
+        ({"name": a.display_name, "slug": a.slug, "type": a.kind} for a in _REGISTRY.values()),
+        key=lambda e: e["name"],
+    )
+
+
 _loaded = False
 
 
