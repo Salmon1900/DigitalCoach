@@ -12,6 +12,7 @@ from app.config import Settings, get_settings
 from app.cv.analyzers.registry import supported_exercises
 from app.db.storage import download_to_temp
 from app.models.analysis import AnalysisResponse
+from app.models.exercises import ExercisesResponse
 from app.models.requests import AnalyzeByReferenceRequest
 from app.services.analysis_service import run_analysis
 
@@ -20,10 +21,10 @@ router = APIRouter(prefix="/api/v1", tags=["analysis"])
 _CHUNK = 1024 * 1024  # 1 MiB
 
 
-@router.get("/exercises")
-async def exercises() -> dict[str, list[dict[str, str]]]:
+@router.get("/exercises", response_model=ExercisesResponse)
+async def exercises() -> ExercisesResponse:
     """List the exercises this service can analyze, each with its type (reps/timed)."""
-    return {"exercises": supported_exercises()}
+    return ExercisesResponse(exercises=supported_exercises())
 
 
 @router.post("/analyze", response_model=AnalysisResponse)
